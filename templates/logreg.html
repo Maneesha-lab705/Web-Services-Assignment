@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LR Predictor</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-light bg-light">
+      <div class="container">
+        <a class="navbar-brand" href="/">← Back to Home</a>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <div class="card mx-auto" style="max-width: 600px">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">LR Prediction Model</h5>
+        </div>
+        <div class="card-body">
+          <form id="predictForm">
+            <div class="mb-3">
+              <label>Age</label>
+              <input
+                type="number"
+                class="form-control"
+                name="age"
+                required
+                min="18"
+                max="100"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label>Job</label>
+              <select class="form-select" name="job" required>
+                <option value="admin.">Administrator</option>
+                <option value="blue-collar">Blue Collar</option>
+                <option value="entrepreneur">Entrepreneur</option>
+                <option value="housemaid">Housemaid</option>
+                <option value="management">Management</option>
+                <option value="retired">Retired</option>
+                <option value="self-employed">Self Employed</option>
+                <option value="services">Services</option>
+                <option value="student">Student</option>
+                <option value="technician">Technician</option>
+                <option value="unemployed">Unemployed</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label>Marital</label>
+              <select class="form-select" name="marital" required>
+                <option value="married">Married</option>
+                <option value="single">Single</option>
+                <option value="divorced">Divorced</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label>Education</label>
+              <select class="form-select" name="education" required>
+                <option value="basic.4y">Basic 4y</option>
+                <option value="basic.6y">Basic 6y</option>
+                <option value="basic.9y">Basic 9y</option>
+                <option value="high.school">High School</option>
+                <option value="professional.course">Professional Course</option>
+                <option value="university.degree">University Degree</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label>Credit Default</label>
+              <select class="form-select" name="default" required>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label>Housing Loan</label>
+              <select class="form-select" name="housing" required>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label>Personal Loan</label>
+              <select class="form-select" name="loan" required>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              <span
+                class="spinner-border spinner-border-sm me-2 d-none"
+                id="spinner"
+              ></span>
+              Predict
+            </button>
+          </form>
+
+          <div id="result" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("predictForm");
+      const resultDiv = document.getElementById("result");
+      const spinner = document.getElementById("spinner");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        spinner.classList.remove("d-none");
+
+        const formData = Object.fromEntries(new FormData(form));
+        const endpoint = window.location.pathname.includes("logreg")
+          ? "/predict/logreg"
+          : "/predict/svm";
+
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          });
+
+          const data = await response.json();
+          if (data.error) throw new Error(data.error);
+
+          resultDiv.innerHTML = `
+          <div class="alert alert-success">
+            <strong>Prediction:</strong> ${data.prediction}<br />
+            <strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%
+          </div>
+        `;
+        } catch (err) {
+          resultDiv.innerHTML = `
+          <div class="alert alert-danger">
+            Error: ${err.message}
+          </div>
+        `;
+        } finally {
+          spinner.classList.add("d-none");
+        }
+      });
+    </script>
+  </body>
+</html>
